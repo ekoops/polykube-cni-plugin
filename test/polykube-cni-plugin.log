@@ -1,0 +1,48 @@
+time="2021-11-07T17:59:37+01:00" level=info msg="ip released" cmd=DEL
+time="2021-11-07T17:59:37+01:00" level=info msg="netns iface and related stuff (routes, arpentry, etc...) deleted" cmd=DEL iface=veth1 netns=/run/netns/ns1
+time="2021-11-07T17:59:39+01:00" level=info msg="lbrp deleted" cmd=DEL lbrp=lbrp-containeri
+time="2021-11-07T17:59:39+01:00" level=info msg="bridge port deleted" bridge=br0 cmd=DEL port=to_lbrp-containeri
+time="2021-11-07T17:59:55+01:00" level=debug msg="netconf parsed" cmd=ADD netconf="&{NetConf:{CNIVersion:1.0.0 Name:mynet Type:polykube-cni-plugin Capabilities:map[] IPAM:{Type:host-local} DNS:{Nameservers:[] Domain: Search:[] Options:[]} RawPrevResult:map[] PrevResult:<nil>} MTU:1450 VClusterCIDR:1.1.1.0/24 BridgeName:br0 Gw:{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}}"
+time="2021-11-07T17:59:55+01:00" level=fatal msg="failed to get ip" cmd=ADD detail="failed to allocate for range 0: 10.0.1.3 has been allocated to containerid, duplicate allocation is not allowed" scope=ipam
+time="2021-11-07T18:00:47+01:00" level=debug msg="netconf parsed" cmd=ADD netconf="&{NetConf:{CNIVersion:1.0.0 Name:mynet Type:polykube-cni-plugin Capabilities:map[] IPAM:{Type:host-local} DNS:{Nameservers:[] Domain: Search:[] Options:[]} RawPrevResult:map[] PrevResult:<nil>} MTU:1450 VClusterCIDR:1.1.1.0/24 BridgeName:br0 Gw:{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}}"
+time="2021-11-07T18:00:47+01:00" level=info msg="ip allocated" cmd=ADD ip=10.0.1.1 netmask=ffffff00
+time="2021-11-07T18:00:47+01:00" level=info msg="veth pair created" cmd=ADD contIface="{Name:veth1 Mac:fa:ca:80:da:2a:f6 Sandbox:/run/netns/ns1}" hostIface="{Name:veth1_ext Mac:02:e5:97:2a:dc:6d Sandbox:}" mtu=1450
+time="2021-11-07T18:00:47+01:00" level=info msg="netns configured" address=10.0.1.1/24 cmd=ADD gateway="{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}" iface=veth1 netns=/run/netns/ns1
+time="2021-11-07T18:00:53+01:00" level=info msg="lbrp created and connected to pod" cmd=ADD connection="lbrp-containeri:to_pod <-> veth1_ext" lbrp=lbrp-containeri
+time="2021-11-07T18:01:03+01:00" level=info msg="lbrp connected to bridge" bridge=br0 cmd=ADD connection="lbrp-containeri:to_bridge <-> br0:to_lbrp-containeri" lbrp=lbrp-containeri
+time="2021-11-07T18:02:01+01:00" level=debug msg="netconf parsed" cmd=ADD netconf="&{NetConf:{CNIVersion:1.0.0 Name:mynet Type:polykube-cni-plugin Capabilities:map[] IPAM:{Type:host-local} DNS:{Nameservers:[] Domain: Search:[] Options:[]} RawPrevResult:map[] PrevResult:<nil>} MTU:1450 VClusterCIDR:1.1.1.0/24 BridgeName:br0 Gw:{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}}"
+time="2021-11-07T18:02:01+01:00" level=info msg="ip allocated" cmd=ADD ip=10.0.1.1 netmask=ffffff00
+time="2021-11-07T18:02:01+01:00" level=info msg="veth pair created" cmd=ADD contIface="{Name:veth1 Mac:be:f5:ef:5a:93:d0 Sandbox:/run/netns/ns1}" hostIface="{Name:veth1_ext Mac:92:8f:84:d1:1c:83 Sandbox:}" mtu=1450
+time="2021-11-07T18:02:01+01:00" level=info msg="netns configured" address=10.0.1.1/24 cmd=ADD gateway="{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}" iface=veth1 netns=/run/netns/ns1
+time="2021-11-07T18:02:06+01:00" level=info msg="lbrp created and connected to pod" cmd=ADD connection="lbrp-containeri:to_pod <-> veth1_ext" lbrp=lbrp-containeri
+time="2021-11-07T18:02:17+01:00" level=info msg="lbrp connected to bridge" bridge=br0 cmd=ADD connection="lbrp-containeri:to_bridge <-> br0:to_lbrp-containeri" lbrp=lbrp-containeri
+time="2021-11-07T18:05:22+01:00" level=debug msg="netconf parsed" cmd=ADD netconf="&{NetConf:{CNIVersion:1.0.0 Name:mynet Type:polykube-cni-plugin Capabilities:map[] IPAM:{Type:host-local} DNS:{Nameservers:[] Domain: Search:[] Options:[]} RawPrevResult:map[] PrevResult:0xc00013a420} MTU:1450 VClusterCIDR:1.1.1.0/24 BridgeName:br0 Gw:{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}}"
+time="2021-11-07T18:05:22+01:00" level=info msg="ip allocated" cmd=ADD ip=10.0.1.1 netmask=ffffff00
+time="2021-11-07T18:05:22+01:00" level=info msg="veth pair created" cmd=ADD contIface="{Name:veth1 Mac:ea:2d:60:28:e2:22 Sandbox:/run/netns/ns1}" hostIface="{Name:veth1_ext Mac:9e:3e:7f:57:92:bb Sandbox:}" mtu=1450
+time="2021-11-07T18:05:22+01:00" level=info msg="netns configured" address=10.0.1.1/24 cmd=ADD gateway="{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}" iface=veth1 netns=/run/netns/ns1
+time="2021-11-07T18:05:27+01:00" level=info msg="lbrp created and connected to pod" cmd=ADD connection="lbrp-containeri:to_pod <-> veth1_ext" lbrp=lbrp-containeri
+time="2021-11-07T18:05:38+01:00" level=info msg="lbrp connected to bridge" bridge=br0 cmd=ADD connection="lbrp-containeri:to_bridge <-> br0:to_lbrp-containeri" lbrp=lbrp-containeri
+time="2021-11-07T18:11:52+01:00" level=debug msg="netconf parsed" cmd=ADD netconf="&{NetConf:{CNIVersion:1.0.0 Name:mynet Type:polykube-cni-plugin Capabilities:map[] IPAM:{Type:host-local} DNS:{Nameservers:[] Domain: Search:[] Options:[]} RawPrevResult:map[] PrevResult:<nil>} MTU:1450 VClusterCIDR:1.1.1.0/24 BridgeName:br0 Gw:{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}}"
+time="2021-11-07T18:11:52+01:00" level=info msg="ip allocated" cmd=ADD ip=10.0.1.1 netmask=ffffff00
+time="2021-11-07T18:11:52+01:00" level=info msg="veth pair created" cmd=ADD contIface="{Name:veth1 Mac:06:d4:6f:a8:f5:a4 Sandbox:/run/netns/ns1}" hostIface="{Name:veth1_ext Mac:12:8d:84:7a:78:1e Sandbox:}" mtu=1450
+time="2021-11-07T18:11:52+01:00" level=info msg="netns configured" address=10.0.1.1/24 cmd=ADD gateway="{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}" iface=veth1 netns=/run/netns/ns1
+time="2021-11-07T18:11:57+01:00" level=info msg="lbrp created and connected to pod" cmd=ADD connection="lbrp-containeri:to_pod <-> veth1_ext" lbrp=lbrp-containeri
+time="2021-11-07T18:12:08+01:00" level=info msg="lbrp connected to bridge" bridge=br0 cmd=ADD connection="lbrp-containeri:to_bridge <-> br0:to_lbrp-containeri" lbrp=lbrp-containeri
+time="2021-11-07T18:34:44+01:00" level=debug msg="netconf parsed" cmd=ADD netconf="&{NetConf:{CNIVersion:1.0.0 Name:mynet Type:polykube-cni-plugin Capabilities:map[] IPAM:{Type:host-local} DNS:{Nameservers:[] Domain: Search:[] Options:[]} RawPrevResult:map[] PrevResult:0xc00013a420} MTU:1450 VClusterCIDR:1.1.1.0/24 BridgeName:br0 Gw:{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}}"
+time="2021-11-07T18:34:44+01:00" level=info msg="ip allocated" cmd=ADD ip=10.0.1.1 netmask=ffffff00
+time="2021-11-07T18:34:44+01:00" level=info msg="veth pair created" cmd=ADD contIface="{Name:veth1 Mac:ee:40:d8:c3:a6:2e Sandbox:/run/netns/ns1}" hostIface="{Name:veth1_ext Mac:de:3c:21:d5:60:51 Sandbox:}" mtu=1450
+time="2021-11-07T18:34:44+01:00" level=info msg="netns configured" address=10.0.1.1/24 cmd=ADD gateway="{IP:10.0.1.254 RawMAC:aa:bb:cc:dd:ee:ff MAC:aa:bb:cc:dd:ee:ff}" iface=veth1 netns=/run/netns/ns1
+time="2021-11-07T18:34:49+01:00" level=info msg="lbrp created and connected to pod" cmd=ADD connection="lbrp-containeri:to_pod <-> veth1_ext" lbrp=lbrp-containeri
+time="2021-11-07T18:34:59+01:00" level=info msg="lbrp connected to bridge" bridge=br0 cmd=ADD connection="lbrp-containeri:to_bridge <-> br0:to_lbrp-containeri" lbrp=lbrp-containeri
+time="2021-11-07T18:35:11+01:00" level=info msg="ipam plugin CHECK completed" cmd=CHECK
+time="2021-11-07T18:35:11+01:00" level=info msg="netns iface checked" cmd=CHECK iface=veth1 netns=/run/netns/ns1
+time="2021-11-07T18:35:11+01:00" level=info msg="netns routes checked" cmd=CHECK netns=/run/netns/ns1
+time="2021-11-07T18:35:11+01:00" level=info msg="netns CHECK completed" cmd=CHECK netns=/run/netns/ns1
+time="2021-11-07T18:35:11+01:00" level=info msg="netns iface checked" cmd=CHECK iface=veth1_ext netns=root
+time="2021-11-07T18:35:11+01:00" level=info msg="netns checked" cmd=CHECK netns=root
+time="2021-11-07T18:35:11+01:00" level=info msg="lbrp checked" cmd=CHECK lbrp=lbrp-containeri
+time="2021-11-07T18:35:11+01:00" level=info msg="bridge port checked" bridge=br0 cmd=CHECK port=to_lbrp-containeri
+time="2021-11-07T18:35:15+01:00" level=info msg="ip released" cmd=DEL
+time="2021-11-07T18:35:15+01:00" level=info msg="netns iface and related stuff (routes, arpentry, etc...) deleted" cmd=DEL iface=veth1 netns=/run/netns/ns1
+time="2021-11-07T18:35:17+01:00" level=info msg="lbrp deleted" cmd=DEL lbrp=lbrp-containeri
+time="2021-11-07T18:35:17+01:00" level=info msg="bridge port deleted" bridge=br0 cmd=DEL port=to_lbrp-containeri
