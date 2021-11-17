@@ -20,8 +20,6 @@ func main() {
 	cniPath := os.Getenv("CNI_PATH")
 	netConfPath := os.Getenv("NETCONF")
 
-	fmt.Println("netConfPath", netConfPath)
-
 	paths := []string{cniPath}
 	cniConf := libcni.NewCNIConfigWithCacheDir(paths, "/tmp/cacheDir", nil)
 
@@ -41,6 +39,10 @@ func main() {
 		NetNS:       cniNetns,
 		IfName:      cniIfname,
 	}
+
+	log.Println("Press the Enter Key to perform ADD")
+        fmt.Scanln()
+
 
 	result, err := cniConf.AddNetworkList(context.TODO(), netConfList, runtimeConf)
 	if err != nil {

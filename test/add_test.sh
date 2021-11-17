@@ -8,7 +8,7 @@ set -x
 sudo ip netns del ns1
 sudo ip link del dev gw
 sudo rm -r /var/lib/cni/networks/testnet
-polycubectl lbrp-containeri del
+polycubectl lbrp_veth1_container del
 polycubectl br0 del
 
 set -e
@@ -24,8 +24,8 @@ CNI_CONTAINERID=containerid \
 CNI_NETNS=/run/netns/ns1 \
 CNI_IFNAME=veth1 \
 CNI_PATH=$BIN_DIR \
-$BIN_DIR/polykube-cni-plugin < $CONF_DIR/config.json)
+$BIN_DIR/polykube-cni-plugin < $CONF_DIR/00-polykube.json)
 set +x
 if [[ ! -z "$RESULT" ]]; then
-	jq --argjson RESULT "$RESULT" '. += {prevResult: $RESULT}' $CONF_DIR/config.json > $CONF_DIR/check_test_config.json
+	jq --argjson RESULT "$RESULT" '. += {prevResult: $RESULT}' $CONF_DIR/00-polykube.json > $CONF_DIR/00-polykube-check-test.json
 fi

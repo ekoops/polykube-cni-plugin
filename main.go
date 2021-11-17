@@ -15,13 +15,10 @@ import (
 	"github.com/ekoops/polykube-cni-plugin/utils"
 	lbrp "github.com/ekoops/polykube-cni-plugin/utils/lbrp"
 	simplebridge "github.com/ekoops/polykube-cni-plugin/utils/simplebridge"
-	"io/ioutil"
-	"net"
-
-	//lbrp "github.com/polycube-network/polycube/src/components/k8s/utils/lbrp"
-	//simplebridge "github.com/polycube-network/polycube/src/components/k8s/utils/simplebridge"
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
+	"io/ioutil"
+	"net"
 	"os"
 	"runtime"
 )
@@ -61,11 +58,7 @@ func init() {
 	lbrpAPI = srLbrp.LbrpApi
 }
 
-func getHostIfaceName(contIfaceName string) string {
-	return contIfaceName + "_ext"
-}
-
-func setupVeth(netns ns.NetNS, ifName string, mtu int) (*current.Interface, *current.Interface, error) {
+func setupVeth(netns ns.NetNS, contIfName string, hostIfName string, mtu int) (*current.Interface, *current.Interface, error) {
 	contIface := &current.Interface{}
 	hostIface := &current.Interface{}
 
@@ -73,8 +66,8 @@ func setupVeth(netns ns.NetNS, ifName string, mtu int) (*current.Interface, *cur
 
 		// create the veth pair in the container and move host end into host netns
 		hostVeth, contVeth, err := ip.SetupVethWithName(
-			ifName,
-			getHostIfaceName(ifName),
+			contIfName,
+			hostIfName,
 			mtu,
 			"",
 			hostNS,
@@ -187,7 +180,10 @@ func configureNetns(netns ns.NetNS, ifName string, address *net.IPNet, gwInfo *G
 }
 
 func cmdAdd(args *skel.CmdArgs) error {
-	l := log.WithField("cmd", "ADD")
+	// defining the attachment identifier and the base logger
+	att := utils.Truncate(fmt.Sprintf("%s_%s", args.IfName, args.ContainerID[0:10]), 15)
+	l := log.WithField("id", fmt.Sprintf("ADD_%s", att))
+
 	// parsing configuration
 	conf, err := loadNetConf(args.StdinData)
 	if err != nil {
@@ -197,7 +193,6 @@ func cmdAdd(args *skel.CmdArgs) error {
 		}).Fatal("parsing failed")
 		return fmt.Errorf("failed to parse netconf: %v", err)
 	}
-	l.WithField("netconf", fmt.Sprintf("%+v", conf)).Debug("netconf parsed")
 
 	// parsing prevResult, if present
 	var prevResult *current.Result
@@ -253,7 +248,14 @@ func cmdAdd(args *skel.CmdArgs) error {
 	}).Info("ip allocated")
 
 	// setting up the veth pair
-	hostIface, contIface, err := setupVeth(netns, args.IfName, conf.MTU)
+	// using a truncation of ifName_containerId[0:10] up to 15 characters since it is the max possibile
+	// link name dimensione
+	hostIface, contIface, err := setupVeth(
+		netns,
+		args.IfName,
+		att,
+		conf.MTU,
+	)
 	if err != nil {
 		l.WithFields(log.Fields{
 			"netns":  args.Netns,
@@ -285,28 +287,28 @@ func cmdAdd(args *skel.CmdArgs) error {
 	// creating lbrp (using pod ip as id, so it can be referenced by operator)
 	// and connecting the frontend port to hostInterface
 	//lbrpName := fmt.Sprintf("lbrp-%s", addr.IP.String())
-	lbName := "lbrp-" + args.ContainerID[0:10]
-	lbLgr := l.WithField("lbrp", lbName)
+	lbName := "lbrp_" + hostIface.Name
+	llog := l.WithField("lbrp", lbName)
 	if err := createLbrp(lbName, hostIface); err != nil {
-		lbLgr.WithField("detail", err).Fatal("failed to create lbrp")
+		llog.WithField("detail", err).Fatal("failed to create lbrp")
 		return fmt.Errorf("failed to create lbrp %q: %v", lbName, err)
 	}
-	lbLgr.WithField(
+	llog.WithField(
 		"connection", fmt.Sprintf("%s <-> %s", utils.CreatePeer(lbName, "to_pod"), hostIface.Name),
 	).Info("lbrp created and connected to pod")
 
 	// creating bridge port and connect it to the lbrp
 	brName := conf.BridgeName
-	conLgr := l.WithFields(log.Fields{
+	conlog := l.WithFields(log.Fields{
 		"lbrp":   lbName,
 		"bridge": brName,
 	})
 	lbPort, brPort, err := connectLbrpToBridge(lbName, brName)
 	if err != nil {
-		conLgr.WithField("detail", err).Fatal("failed to connect lbrp to bridge")
+		conlog.WithField("detail", err).Fatal("failed to connect lbrp to bridge")
 		return fmt.Errorf("failed to connect %q lbrp to %q bridge: %v", lbName, brName, err)
 	}
-	conLgr.WithField(
+	conlog.WithField(
 		"connection", fmt.Sprintf("%s <-> %s", brPort.Peer, lbPort.Peer),
 	).Info("lbrp connected to bridge")
 
@@ -371,19 +373,19 @@ func checkIface(l *log.Entry, netns string, iface *IFaceConf) error {
 
 // getIfaceConfs scans the prevResult.Interfaces in order to find the expected container and host interface created
 // during the ADD operation. If the two interfaces are found, they are returned in association with their IPConf
-func getIfaceConfs(ifname, netns string, prevResult *current.Result) (*IFaceConf, *IFaceConf, error) {
+func getIfaceConfs(contIfName, hostIfName, netns string, prevResult *current.Result) (*IFaceConf, *IFaceConf, error) {
 	var contIfaceConf, hostIfaceConf *IFaceConf
 	// scanning all prevResult interfaces
 	for i, iface := range prevResult.Interfaces {
 		// is this the container interface?
-		if iface.Name == ifname && iface.Sandbox == netns {
+		if iface.Name == contIfName && iface.Sandbox == netns {
 			contIfaceConf = &IFaceConf{
 				ResultIndex: i,
 				Interface:   iface,
 			}
 		}
 		// is this the host interface?
-		if iface.Name == getHostIfaceName(ifname) && iface.Sandbox == "" {
+		if iface.Name == hostIfName && iface.Sandbox == "" {
 			hostIfaceConf = &IFaceConf{
 				ResultIndex: i,
 				Interface:   iface,
@@ -413,7 +415,10 @@ func getIfaceConfs(ifname, netns string, prevResult *current.Result) (*IFaceConf
 
 // cmdCheck is called for CHECK requests
 func cmdCheck(args *skel.CmdArgs) error {
-	l := log.WithField("cmd", "CHECK")
+	// defining the attachment identifier and the base logger
+	att := utils.Truncate(fmt.Sprintf("%s_%s", args.IfName, args.ContainerID[0:10]), 15)
+	l := log.WithField("id", fmt.Sprintf("CHK_%s", att))
+
 	// parsing configuration
 	conf, err := loadNetConf(args.StdinData)
 	if err != nil {
@@ -447,7 +452,7 @@ func cmdCheck(args *skel.CmdArgs) error {
 		}).Fatal("CHECK operation failed")
 		return fmt.Errorf("CHECK operation failed on ipam plugin: %v", err)
 	}
-	l.Info("ipam plugin CHECK completed")
+	l.Info("ip checked")
 
 	// getting netns handle
 	netns, err := ns.GetNS(args.Netns)
@@ -461,7 +466,7 @@ func cmdCheck(args *skel.CmdArgs) error {
 	defer netns.Close()
 
 	// extracting the container interface and the host interface with their own ip configurations
-	contIfaceConf, hostIfaceConf, err := getIfaceConfs(args.IfName, args.Netns, prevResult)
+	contIfaceConf, hostIfaceConf, err := getIfaceConfs(args.IfName, att, args.Netns, prevResult)
 
 	if err != nil {
 		l.WithFields(log.Fields{
@@ -490,7 +495,7 @@ func cmdCheck(args *skel.CmdArgs) error {
 	}); err != nil {
 		return err
 	}
-	nlog.Info("netns CHECK completed")
+	nlog.Info("netns checked")
 
 	// checking root netns interface
 	nlog = l.WithField("netns", "root")
@@ -502,8 +507,8 @@ func cmdCheck(args *skel.CmdArgs) error {
 	nlog.Info("netns checked")
 
 	// checking lbrp
-	lbName := "lbrp-" + args.ContainerID[0:10]
-	lbFPeer := getHostIfaceName(args.IfName)                   // lbrp frontend port peer
+	lbName := "lbrp_" + att
+	lbFPeer := att                                             // lbrp frontend port peer
 	lbBPeer := utils.CreatePeer(conf.BridgeName, "to_"+lbName) // lbrp backend port peer
 	llog := l.WithField("lbrp", lbName)                        // load balancer logger
 	if err := checkLbrp(
@@ -550,7 +555,10 @@ func cmdCheck(args *skel.CmdArgs) error {
 
 // cmdDel is called for DELETE requests
 func cmdDel(args *skel.CmdArgs) error {
-	l := log.WithField("cmd", "DEL")
+	// defining the attachment identifier and the base logger
+	att := utils.Truncate(fmt.Sprintf("%s_%s", args.IfName, args.ContainerID[0:10]), 15)
+	l := log.WithField("id", fmt.Sprintf("DEL_%s", att))
+
 	// parsing configuration
 	conf, err := loadNetConf(args.StdinData)
 	if err != nil {
@@ -599,7 +607,7 @@ func cmdDel(args *skel.CmdArgs) error {
 	}
 
 	// deleting load balancer
-	lbName := "lbrp-" + args.ContainerID[0:10]
+	lbName := "lbrp_" + att
 	llog := l.WithField("lbrp", lbName)
 	if resp, err := lbrpAPI.DeleteLbrpByID(context.TODO(), lbName); err != nil && resp.StatusCode != 409 {
 		llog.WithField("detail", err).Fatal("failed to delete lbrp")

@@ -12,4 +12,4 @@ CNI_CONTAINERID=containerid \
 CNI_NETNS=/run/netns/ns1 \
 CNI_IFNAME=veth1 \
 CNI_PATH=$BIN_DIR \
-$BIN_DIR/polykube-cni-plugin < $CONF_DIR/CHECK_config.json
+$BIN_DIR/polykube-cni-plugin < $CONF_DIR/00-polykube-check-test.json

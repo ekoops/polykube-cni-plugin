@@ -23,7 +23,7 @@ func createLbrp(name string, hostIface *current.Interface) error {
 	lb := lbrp.Lbrp{
 		Name:     name,
 		Ports:    lbrpPorts,
-		Loglevel: "DEBUG",
+		Loglevel: "TRACE",
 	}
 	if resp, err := lbrpAPI.CreateLbrpByID(context.TODO(), name, lb); err != nil {
 		return fmt.Errorf("error: %s, response: %+v", err, resp)

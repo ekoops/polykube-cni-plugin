@@ -24,5 +24,5 @@ CNI_CONTAINERID=containerid \
 CNI_NETNS=/run/netns/ns1 \
 CNI_IFNAME=veth1 \
 CNI_PATH=$BIN_DIR \
-NETCONF=$CONF_DIR/netconf.json \
+NETCONF=$CONF_DIR/00-polykube-net.json \
 ./test_chaining
